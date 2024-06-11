@@ -1,6 +1,8 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
 import lombok.RequiredArgsConstructor;
 import org.example.model.Note;
 import org.example.service.impl.NoteServiceInterface;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NoteController {
     private final NoteServiceInterface noteServiceInterface;
+    private final Counter addNoteCounter = Metrics.counter("add_notes_counter");
 
     @GetMapping
     public ResponseEntity<List<Note>> getNotes(){
@@ -27,8 +30,9 @@ public class NoteController {
         return new ResponseEntity<>(noteServiceInterface.getNoteById(id), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Note> createNote(@RequestBody Note note){
+        addNoteCounter.increment();
         return new ResponseEntity<>(noteServiceInterface.createNote(note), HttpStatus.CREATED);
     }
 
