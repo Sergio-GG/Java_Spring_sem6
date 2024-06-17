@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import lombok.RequiredArgsConstructor;
 import org.example.model.Note;
+import org.example.service.FileGateway;
 import org.example.service.impl.NoteServiceInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ public class NoteController {
     private final NoteServiceInterface noteServiceInterface;
     private final Counter addNoteCounter = Metrics.counter("add_notes_counter");
 
+    private final FileGateway fileGateway;
+
     @GetMapping
     public ResponseEntity<List<Note>> getNotes(){
         return new ResponseEntity<>(noteServiceInterface.getAllNotes(), HttpStatus.OK);
@@ -33,6 +36,7 @@ public class NoteController {
     @PostMapping("/create")
     public ResponseEntity<Note> createNote(@RequestBody Note note){
         addNoteCounter.increment();
+        fileGateway.writeToFile(note.getTitle() + ".txt", note.toString());
         return new ResponseEntity<>(noteServiceInterface.createNote(note), HttpStatus.CREATED);
     }
 
